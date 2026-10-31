@@ -1,0 +1,14 @@
+# Claude Code local settings (may contain sensitive information)
+.claude/settings.local.json
+settings.local.json
+
+# macOS system files
+.DS_Store
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.terraform.local.hcl
+tfplan
+tfplan.*
