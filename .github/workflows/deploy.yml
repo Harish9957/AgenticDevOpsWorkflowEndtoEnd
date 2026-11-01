@@ -1,0 +1,58 @@
+name: Deploy site to S3 and CloudFront
+
+on:
+  push:
+    branches:
+      - main
+
+# Required for OIDC token exchange with AWS. Read-only on repo contents.
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-site
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: us-east-1
+  # Values from `terraform output` in terraform/ (embedded per project convention).
+  S3_BUCKET: simpleagenticdevopsworkflow-dev-316658061904
+  CLOUDFRONT_DISTRIBUTION_ID: E1RBHCLAA3ZNGC
+  # Role defined in terraform/githubidc.tf
+  AWS_ROLE_ARN: arn:aws:iam::316658061904:role/simpleagenticdevopsworkflow-dev-github-actions-deploy
+
+jobs:
+  deploy:
+    name: Sync to S3 and invalidate CloudFront
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.AWS_ROLE_ARN }}
+          role-session-name: github-deploy-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Sync site files to S3
+        run: |
+          aws s3 sync . "s3://${S3_BUCKET}" \
+            --exclude ".git/*" \
+            --exclude ".github/*" \
+            --exclude "terraform/*" \
+            --exclude ".claude/*" \
+            --exclude "*.md" \
+            --exclude "*.log" \
+            --exclude "*.tfstate*" \
+            --exclude "tfplan*"
+
+      - name: Invalidate CloudFront cache
+        run: |
+          aws cloudfront create-invalidation \
+            --distribution-id "${CLOUDFRONT_DISTRIBUTION_ID}" \
+            --paths "/*"
