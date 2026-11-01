@@ -17,10 +17,10 @@ concurrency:
 env:
   AWS_REGION: us-east-1
   # Values from `terraform output` in terraform/ (embedded per project convention).
-  S3_BUCKET: simpleagenticdevopsworkflow-dev-316658061904
-  CLOUDFRONT_DISTRIBUTION_ID: E1RBHCLAA3ZNGC
+  S3_BUCKET: simpleagenticdevopsworkflow-dev-12345678910
+  CLOUDFRONT_DISTRIBUTION_ID: XXXXXXXXXXXXX
   # Role defined in terraform/githubidc.tf
-  AWS_ROLE_ARN: arn:aws:iam::316658061904:role/simpleagenticdevopsworkflow-dev-github-actions-deploy
+  AWS_ROLE_ARN: arn:aws:iam::12345678910:role/simpleagenticdevopsworkflow-dev-github-actions-deploy
 
 jobs:
   deploy:
